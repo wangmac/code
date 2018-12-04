@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 指向Dao接口，做dao的是实现 -->
+<mapper namespace="com.zs.pms.dao.ArticleDao">
+	<!-- 只关联栏目 -->
+	<resultMap type="Tarticle" id="tarticlemap">
+		<!-- property:po中的属性 column：数据库中的字段 -->
+		<association property="channel" column="channel" select="getChannel" />
+	</resultMap>
+	<!-- 关联执行的sql -->
+	<select id="getChannel" parameterType="int" resultType="TChannel">
+		select * from tchannel where id=#{channel}
+	</select>
+	<!-- sql片段 -->
+	<!-- 查什么 -->
+	<sql id="seletor">
+		select * from tarticle
+	</sql>
+	<!-- 查询条件 -->
+	<sql id="where">
+		<where>
+			<if test="title!=null and title!=''">
+				and title=#{title}
+			</if>
+			<if test="isremod!=0 ">
+				and isremod=#{isremod}
+			</if>
+			<if test="ishot!=0 ">
+				and ishot=#{ishot}
+			</if>
+		</where>
+	</sql>
+	<!-- 排序 -->
+	<sql id="order">
+		order by id desc
+	</sql>
+	<!-- 分页查询 -->
+	<!-- 转译符 '>':&gt; '<':&lt; -->
+	<sql id="page">
+		<where>
+			<if test="page!=0">
+				and rt&gt;=#{start} and rt&lt;=#{end}
+			</if>
+		</where>
+	</sql>
+
+
+	<select id="queryByPage" parameterType="QueryAriticle"
+		resultMap="tarticlemap">
+		<!-- 调用sql片段 -->
+		select * from
+		(select rownum rt,t.* from(
+		<include refid="seletor" />
+		<include refid="where" />
+		<include refid="order" />
+		)t)t1
+		<include refid="page" />
+	</select>
+
+
+
+</mapper>
